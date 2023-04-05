@@ -88,26 +88,36 @@ open_client(char *hostname, char *port)
 	 * failure, return -2.
 	 */
 	// REPLACE THIS.
-	listp = NULL;
+	if(getaddrinfo(hostname, port, &hints, &listp)) printf("bad get addr info\n");
+
 
 	/*
 	 * Iterate over the address list for one that can be successfully
 	 * connected to.
 	 */
-	for (ai = listp; /* FILL THIS IN */; /* FILL THIS IN */) {
+	for (ai = listp; ai != NULL; ai = ai->ai_next) {
 		/*
 		 * Create a new socket using ai's family, socktype, and
 		 * protocol, and assign its descriptor to fd.  On failure,
 		 * continue to the next ai.
 		 */
-		// REPLACE THIS.
-		fd = 0;
-
+		
+		fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+		printf("clientside fd %d\n", fd);
+		if(fd == -1) {
+			continue;
+		}
 		/*
 		 * Try connecting to the server with ai's addr and addrlen.
 		 * Break out of the loop if connect() succeeds.
 		 */
-		// FILL THIS IN.
+		int err = connect(fd, ai->ai_addr, ai->ai_addrlen);
+		if(err) {
+			printf("clientside err %d\n", err);
+		} else {
+			break;
+		}
+
 
 		/*
 		 * Connect() failed.  Close the descriptor and continue to
@@ -119,7 +129,7 @@ open_client(char *hostname, char *port)
 
 	// Clean up.  Avoid memory leaks!
 	freeaddrinfo(listp);
-
+	printf("end clientside fd %d\n", fd);
 	if (ai == NULL) {
 		// All connection attempts failed.
 		return (-1);

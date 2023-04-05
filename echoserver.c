@@ -50,11 +50,11 @@ main(int argc, char **argv)
 		 * the server's end of the connection.  Assign the new file
 		 * descriptor to connfd.
 		 */
-		// REPLACE THIS.
-		connfd = 0;
+		printf("listenfd %d\n", listenfd);
+		connfd = accept(listenfd, (struct sockaddr *)&clientaddr, &clientlen);
+		printf("connfd %d\n", connfd);
 		// Use getnameinfo() to determine the client's host name.
-		// REPLACE THIS.
-		(void)clientlen;
+		getnameinfo((struct sockaddr *)&clientaddr, clientlen, host_name, NI_MAXHOST, NULL, 0, AI_NUMERICSERV | AI_ADDRCONFIG);
 		/*
 		 * Convert the binary representation of the client's IP
 		 * address to a dotted-decimal string.
@@ -67,8 +67,7 @@ main(int argc, char **argv)
 		 * connection.
 		 */
 		echo(connfd);
-		// Close the server's end of the connection.
-		// FILL THIS IN.
+		close(connfd);
 	}
 }
 
@@ -90,7 +89,10 @@ open_listen(int port)
 	(void)port;
 	// Set listenfd to a newly created stream socket.
 	// REPLACE THIS.
-	listenfd = 0;
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(listenfd == -1) {
+		printf("Bad open socket");
+	}
 	// Eliminate "Address already in use" error from bind().
 	optval = 1;
 	if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, 
@@ -102,13 +104,21 @@ open_listen(int port)
 	 * set the port to the input port.  Be careful to ensure that the IP
 	 * address and port are in network byte order.
 	 */
-	// FILL THIS IN.
+	int addr = htonl(INADDR_ANY);
+	serveraddr.sin_addr = *(struct in_addr*)&addr;
+	serveraddr.sin_port = htonl(port);
+	serveraddr.sin_family = AF_INET;
 	// Use bind() to set the address of listenfd to be serveraddr.
-	// FILL THIS IN.
+	if(bind(listenfd, (struct sockaddr *)&serveraddr, sizeof serveraddr)) {
+		printf("Bad bind");
+	}
+
 	/*
 	 * Use listen() to ready the socket for accepting connection requests.
 	 * Set the backlog to 8.
 	 */
-	// FILL THIS IN.
+	if(listen(listenfd, 8)) {
+				printf("Bad listen");
+	}
 	return (listenfd);
 }
