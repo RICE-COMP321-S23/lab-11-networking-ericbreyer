@@ -103,7 +103,6 @@ open_client(char *hostname, char *port)
 		 */
 		
 		fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
-		printf("clientside fd %d\n", fd);
 		if(fd == -1) {
 			continue;
 		}
@@ -129,7 +128,6 @@ open_client(char *hostname, char *port)
 
 	// Clean up.  Avoid memory leaks!
 	freeaddrinfo(listp);
-	printf("end clientside fd %d\n", fd);
 	if (ai == NULL) {
 		// All connection attempts failed.
 		return (-1);
